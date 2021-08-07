@@ -10,10 +10,6 @@ import * as playerStates from './States';
 import SkyFrag from './shaders/sky.fragment.glsl';
 import SkyVertex from './shaders/sky.vertex.glsl';
 
-import TerrainFrag from './shaders/terrain.fragment.glsl';
-import TerrainVertex from './shaders/terrain.vertex.glsl';
-import { on } from 'events';
-
 const canvas = document.getElementById('app');
 
 // USEFULL VARS
@@ -30,6 +26,11 @@ const camera = new THREE.PerspectiveCamera(45, size.x / size.y, 1, 10000);
 const scene = new THREE.Scene();
 
 renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.physicallyCorrectLights = true;
+renderer.toneMapping = THREE.ReinhardToneMapping;
+renderer.gammaOutput = true;
+renderer.toneMappingExposure = 2.3;
 renderer.setSize(size.x, size.y);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
@@ -59,9 +60,24 @@ const createPlayer = () => {
 	cameraController = new CameraController(config);
 	stateMachine = new StateMachine();
 
+	playerController.speed = 10;
+
+	loader.manager.onLoad = () => {
+		stateMachine.setState('idle');
+	};
+
 	loader.load('swat.fbx').then((model) => {
 		model.traverse((n) => {
 			n.castShadow = true;
+			if (n.isMesh) {
+				if (n.material.length) {
+					n.material.map((m) => {
+						m.encoding = THREE.sRGBEncoding;
+					});
+				} else {
+					n.material.map.encoding = THREE.sRGBEncoding;
+				}
+			}
 		});
 		model.rotation.y = Math.PI;
 
@@ -75,38 +91,31 @@ const createPlayer = () => {
 		const onLoadAnimation = (animName, anim) => {
 			const clip = anim.animations[0];
 			const action = playerMixer.clipAction(clip);
-
-			stateMachine.animations[animName] = {
+			stateMachine.addAnimation(animName, {
 				clip,
 				action
-			};
-
-			stateMachine.setState('idle');
+			});
 		};
 
 		loader.load('Idle.fbx').then((a) => onLoadAnimation('idle', a));
+		loader.load('Running.fbx').then((a) => onLoadAnimation('run', a));
+		loader.load('Walking.fbx').then((a) => onLoadAnimation('walk', a));
 		stateMachine.addState('idle', playerStates.IdleState);
+		// stateMachine.addState('run', playerStates.IdleState);
+		// stateMachine.addState('walk', playerStates.IdleState);
 	});
 };
 
 const createFloor = () => {
+	const sand = new THREE.TextureLoader().load('textures/sand.jpg');
+
+	sand.wrapS = THREE.RepeatWrapping;
+	sand.wrapT = THREE.RepeatWrapping;
+	sand.encoding = THREE.sRGBEncoding;
+	sand.repeat.set(5, 5);
+
 	const geom = new THREE.PlaneBufferGeometry(10, 10, 512, 512);
-	// const material = new THREE.RawShaderMaterial({
-	// 	uniforms: {
-	// 		uTime: {
-	// 			value: null
-	// 		},
-	// 		bottomColor: {
-	// 			value: new THREE.Color(0x046b09)
-	// 		},
-	// 		topColor: {
-	// 			value: new THREE.Color(0x19c488)
-	// 		}
-	// 	},
-	// 	vertexShader: TerrainVertex,
-	// 	fragmentShader: TerrainFrag
-	// });
-	const material = new THREE.MeshLambertMaterial({ color: 'green' });
+	const material = new THREE.MeshLambertMaterial({ map: sand });
 	const mesh = new THREE.Mesh(geom, material);
 
 	mesh.rotation.x = -Math.PI * 0.5;
@@ -120,24 +129,28 @@ const createFloor = () => {
 
 const createLight = () => {
 	const ligthGroup = new THREE.Group();
-	const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+	const dirLight = new THREE.DirectionalLight(0xfff1a5, 1);
+	const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
 
-	dirLight.position.y = 10;
-	dirLight.position.x = 2;
+	dirLight.position.y = 80;
+	dirLight.position.x = 20;
+	dirLight.position.z = -20;
 	dirLight.castShadow = true;
+	dirLight.shadow.bias = -0.0001;
 	dirLight.shadow.radius = 0.75;
-	dirLight.shadow.mapSize.set(1024, 1024);
-	dirLight.shadow.camera.top = 75;
-	dirLight.shadow.camera.left = -75;
-	dirLight.shadow.camera.bottom = -75;
-	dirLight.shadow.camera.right = 75;
-	dirLight.shadow.camera.far = 25;
-	dirLight.shadow.camera.zoom = 2;
+	dirLight.shadow.mapSize.set(2056, 2056);
+	dirLight.shadow.camera.top = 500;
+	dirLight.shadow.camera.left = -500;
+	dirLight.shadow.camera.bottom = -500;
+	dirLight.shadow.camera.right = 500;
+	dirLight.shadow.camera.far = 500;
+	dirLight.shadow.camera.zoom = 3;
 	dirLight.shadow.camera.updateProjectionMatrix();
-	// const helper = new THREE.CameraHelper(dirLight.shadow.camera);
+	const helper = new THREE.CameraHelper(dirLight.shadow.camera);
 
-	// ligthGroup.add(helper);
+	ligthGroup.add(helper);
 	ligthGroup.add(dirLight);
+	ligthGroup.add(ambientLight);
 
 	return ligthGroup;
 };
@@ -147,10 +160,10 @@ const createSky = () => {
 	const skyMat = new THREE.RawShaderMaterial({
 		uniforms: {
 			bottomColor: {
-				value: new THREE.Color(0xbfffe8)
+				value: new THREE.Color(0xa48660)
 			},
 			topColor: {
-				value: new THREE.Color(0x8fe0d0)
+				value: new THREE.Color(0xe0a96d)
 			}
 		},
 		vertexShader: SkyVertex,
@@ -163,7 +176,7 @@ const createSky = () => {
 	scene.fog = new THREE.Fog(
 		skyMat.uniforms.bottomColor.value.clone(),
 		0.1,
-		300
+		500
 	);
 
 	return sky;

@@ -5,6 +5,10 @@ export default class StateMachine {
 		this.currentState = '';
 	}
 
+	addAnimation(anim, value) {
+		this.animations[anim] = value;
+	}
+
 	addState(name, type) {
 		this.states[name] = type;
 	}

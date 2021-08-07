@@ -5,6 +5,7 @@ import { SkeletonUtils } from 'three/examples/jsm/utils/SkeletonUtils';
 export default class ModelLoader extends FBXLoader {
 	constructor(manager = new THREE.LoadingManager()) {
 		super(manager);
+		this.setPath('models/');
 		this.modelList = {};
 	}
 

@@ -18,7 +18,6 @@ export class IdleState extends State {
 	}
 
 	Enter(prevState) {
-		console.log(this.parent);
 		const action = this.parent.animations['idle'].action;
 		if (prevState) {
 		} else {
