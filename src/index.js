@@ -3,13 +3,16 @@ import './styles.css';
 import * as THREE from 'three';
 import PlayerController from './PlayerController';
 import CameraController from './CameraController';
+import ModelLoader from './ModelLoader';
+import StateMachine from './StateMachine';
+import * as playerStates from './States';
 
 import SkyFrag from './shaders/sky.fragment.glsl';
 import SkyVertex from './shaders/sky.vertex.glsl';
 
 import TerrainFrag from './shaders/terrain.fragment.glsl';
 import TerrainVertex from './shaders/terrain.vertex.glsl';
-import ModelLoader from './ModelLoader';
+import { on } from 'events';
 
 const canvas = document.getElementById('app');
 
@@ -48,12 +51,13 @@ window.addEventListener('resize', () => {
 	size.y = window.innerHeight;
 });
 
-let playerController, cameraController;
+let playerController, cameraController, stateMachine, playerMixer;
 
 const createPlayer = () => {
 	const loader = new ModelLoader();
 	playerController = new PlayerController(config);
 	cameraController = new CameraController(config);
+	stateMachine = new StateMachine();
 
 	loader.load('swat.fbx').then((model) => {
 		model.traverse((n) => {
@@ -61,10 +65,27 @@ const createPlayer = () => {
 		});
 		model.rotation.y = Math.PI;
 
+		playerMixer = new THREE.AnimationMixer(model);
+
 		scene.add(model);
 		model.scale.set(0.1, 0.1, 0.1);
 		playerController.attach(model);
 		cameraController.attach(model);
+
+		const onLoadAnimation = (animName, anim) => {
+			const clip = anim.animations[0];
+			const action = playerMixer.clipAction(clip);
+
+			stateMachine.animations[animName] = {
+				clip,
+				action
+			};
+
+			stateMachine.setState('idle');
+		};
+
+		loader.load('Idle.fbx').then((a) => onLoadAnimation('idle', a));
+		stateMachine.addState('idle', playerStates.IdleState);
 	});
 };
 
@@ -160,13 +181,15 @@ scene.add(sky);
 camera.position.z = 3;
 camera.position.y = 2.5;
 
-const clock = new THREE.Clock();
-
-const tick = () => {
+const tick = (timeElapsed) => {
 	renderer.render(scene, camera);
-	const delta = clock.getDelta();
-	playerController.update(delta);
-	cameraController.update(delta);
+	const timeElapsedS = Math.min(1.0 / 30.0, timeElapsed * 0.001);
+	playerController.update(timeElapsedS);
+	cameraController.update(timeElapsedS);
+	stateMachine.update(timeElapsedS, playerController.input);
+	if (playerMixer) {
+		playerMixer.update(timeElapsedS);
+	}
 	requestAnimationFrame(tick);
 };
 
