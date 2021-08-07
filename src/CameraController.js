@@ -5,6 +5,9 @@ export default class CameraController {
 		this.config = config;
 		this.target = null;
 		this.init();
+
+		this.currentPos = new THREE.Vector3();
+		this.currentLook = new THREE.Vector3();
 	}
 
 	init() {
@@ -19,18 +22,18 @@ export default class CameraController {
 	}
 
 	calculateOffset() {
-		const offset = new THREE.Vector3(0, 60, 90);
-		const position = this.target.position.clone();
-		position.add(offset);
+		const offset = new THREE.Vector3(-0, 50, -80);
+		offset.applyQuaternion(this.target.quaternion);
+		offset.add(this.target.position);
 
-		return position;
+		return offset;
 	}
 	calculateLookAt() {
-		const look = new THREE.Vector3(0, 10, 10);
-		const position = this.target.position.clone();
-		position.add(look);
+		const look = new THREE.Vector3(0, 5, 20);
+		look.applyQuaternion(this.target.quaternion);
+		look.add(this.target.position);
 
-		return position;
+		return look;
 	}
 
 	detach() {
@@ -42,8 +45,13 @@ export default class CameraController {
 		if (this.target) {
 			const position = this.calculateOffset();
 			const lookAt = this.calculateLookAt();
-			this.config.camera.position.lerp(position, dt * 2.5);
-			this.config.camera.lookAt(lookAt);
+			const t = 1.0 - Math.pow(0.01, dt);
+
+			this.currentPos.lerp(position, t);
+			this.currentLook.lerp(lookAt, t);
+
+			this.config.camera.position.copy(this.currentPos);
+			this.config.camera.lookAt(this.currentLook);
 			this.config.camera.updateProjectionMatrix();
 		}
 	}

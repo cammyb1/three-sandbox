@@ -57,7 +57,10 @@ let playerController, cameraController, stateMachine, playerMixer;
 const createPlayer = () => {
 	const loader = new ModelLoader();
 	playerController = new PlayerController(config);
-	cameraController = new CameraController(config);
+	cameraController = new CameraController({
+		...config,
+		input: playerController.input
+	});
 	stateMachine = new StateMachine();
 
 	playerController.speed = 10;
@@ -67,6 +70,7 @@ const createPlayer = () => {
 	};
 
 	loader.load('swat.fbx').then((model) => {
+		console.log(model);
 		model.traverse((n) => {
 			n.castShadow = true;
 			if (n.isMesh) {

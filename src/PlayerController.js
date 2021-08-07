@@ -48,7 +48,7 @@ export default class PlayerController {
 			let baseSpeed = this.speed;
 
 			if (this.input.keys.sprint) {
-				baseSpeed *= 2;
+				baseSpeed *= 2.5;
 			} else {
 				baseSpeed = this.speed;
 			}
