@@ -19,7 +19,14 @@ export default class CameraController {
 	}
 
 	calculateOffset() {
-		const offset = new THREE.Vector3(0, 25, 40);
+		const offset = new THREE.Vector3(0, 50, 80);
+		const position = this.target.position.clone();
+		position.add(offset);
+
+		return position;
+	}
+	calculateLookAt() {
+		const offset = new THREE.Vector3(0, 10, 10);
 		const position = this.target.position.clone();
 		position.add(offset);
 
@@ -34,7 +41,9 @@ export default class CameraController {
 	update(dt) {
 		if (this.target) {
 			const position = this.calculateOffset();
+			const lookAt = this.calculateLookAt();
 			this.config.camera.position.lerp(position, dt * 2.5);
+			this.config.camera.lookAt(lookAt);
 			this.config.camera.updateProjectionMatrix();
 		}
 	}

@@ -9,6 +9,7 @@ import SkyVertex from './shaders/sky.vertex.glsl';
 
 import TerrainFrag from './shaders/terrain.fragment.glsl';
 import TerrainVertex from './shaders/terrain.vertex.glsl';
+import ModelLoader from './ModelLoader';
 
 const canvas = document.getElementById('app');
 
@@ -47,15 +48,24 @@ window.addEventListener('resize', () => {
 	size.y = window.innerHeight;
 });
 
+let playerController, cameraController;
+
 const createPlayer = () => {
-	const geom = new THREE.BoxBufferGeometry(2, 2, 2);
-	const material = new THREE.MeshLambertMaterial({ color: 'red' });
-	const mesh = new THREE.Mesh(geom, material);
+	const loader = new ModelLoader();
+	playerController = new PlayerController(config);
+	cameraController = new CameraController(config);
 
-	mesh.castShadow = true;
-	mesh.position.y = 1;
+	loader.load('swat.fbx').then((model) => {
+		model.traverse((n) => {
+			n.castShadow = true;
+		});
+		model.rotation.y = Math.PI;
 
-	return mesh;
+		scene.add(model);
+		model.scale.set(0.1, 0.1, 0.1);
+		playerController.attach(model);
+		cameraController.attach(model);
+	});
 };
 
 const createFloor = () => {
@@ -138,25 +148,17 @@ const createSky = () => {
 	return sky;
 };
 
-const player = createPlayer();
+createPlayer();
 const floor = createFloor();
 const sky = createSky();
 const light = createLight();
-const playerController = new PlayerController(config);
-const cameraController = new CameraController(config);
 
-playerController.speed = 5;
-
-scene.add(player);
 scene.add(floor);
 scene.add(light);
 scene.add(sky);
 
 camera.position.z = 3;
 camera.position.y = 2.5;
-
-playerController.attach(player);
-cameraController.attach(player);
 
 const clock = new THREE.Clock();
 
