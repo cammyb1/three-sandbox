@@ -65,7 +65,7 @@ export class WalkState extends State {
 				action.setEffectiveWeight(1.0);
 			}
 
-			action.crossFadeFrom(prevAction, 0.1, true);
+			action.crossFadeFrom(prevAction, 0.5, true);
 		}
 
 		action.timeScale = 0.5;
@@ -110,7 +110,7 @@ export class RunState extends State {
 				action.setEffectiveTimeScale(1.0);
 				action.setEffectiveWeight(1.0);
 			}
-			action.crossFadeFrom(prevAction, 0.1, true);
+			action.crossFadeFrom(prevAction, 0.5, true);
 		}
 
 		action.timeScale = 0.5;

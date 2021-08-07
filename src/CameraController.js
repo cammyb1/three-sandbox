@@ -19,16 +19,16 @@ export default class CameraController {
 	}
 
 	calculateOffset() {
-		const offset = new THREE.Vector3(0, 50, 80);
+		const offset = new THREE.Vector3(0, 60, 90);
 		const position = this.target.position.clone();
 		position.add(offset);
 
 		return position;
 	}
 	calculateLookAt() {
-		const offset = new THREE.Vector3(0, 10, 10);
+		const look = new THREE.Vector3(0, 10, 10);
 		const position = this.target.position.clone();
-		position.add(offset);
+		position.add(look);
 
 		return position;
 	}
