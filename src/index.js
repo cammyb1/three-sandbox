@@ -146,9 +146,9 @@ const createLight = () => {
 	dirLight.shadow.camera.far = 500;
 	dirLight.shadow.camera.zoom = 3;
 	dirLight.shadow.camera.updateProjectionMatrix();
-	const helper = new THREE.CameraHelper(dirLight.shadow.camera);
+	// const helper = new THREE.CameraHelper(dirLight.shadow.camera);
 
-	ligthGroup.add(helper);
+	// ligthGroup.add(helper);
 	ligthGroup.add(dirLight);
 	ligthGroup.add(ambientLight);
 
