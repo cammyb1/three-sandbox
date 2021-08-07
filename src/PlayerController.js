@@ -1,30 +1,11 @@
-import { Vector2, Vector3, Raycaster, Object3D } from 'three';
 import PlayerInput from './PlayerInput';
 
 export default class PlayerController {
-	constructor(config) {
-		this.config = config;
+	constructor(params) {
+		this.params = params;
 		this.target = null;
-		this.listener = {
-			move: null
-		};
-		this.raycaster = new Raycaster();
 		this.input = new PlayerInput();
-		this.mouse = new Vector2(0, 0);
 		this.speed = 5.0;
-		this.init();
-	}
-
-	init() {
-		this.listener.move = (e) => {
-			this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-			this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-		};
-		window.addEventListener('mousemove', this.listener.move);
-	}
-
-	dispose() {
-		window.removeEventListener('mousemove', this.listener.move);
 	}
 
 	attach(target) {

@@ -24,6 +24,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 const camera = new THREE.PerspectiveCamera(45, size.x / size.y, 1, 10000);
 const scene = new THREE.Scene();
+const loader = new ModelLoader();
 
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -55,7 +56,6 @@ window.addEventListener('resize', () => {
 let playerController, cameraController, stateMachine, playerMixer;
 
 const createPlayer = () => {
-	const loader = new ModelLoader();
 	playerController = new PlayerController(config);
 	cameraController = new CameraController({
 		...config,
@@ -63,14 +63,14 @@ const createPlayer = () => {
 	});
 	stateMachine = new StateMachine();
 
-	playerController.speed = 10;
+	playerController.speed = 20;
 
 	loader.manager.onLoad = () => {
 		stateMachine.setState('idle');
 	};
 
 	loader.load('swat.fbx').then((model) => {
-		console.log(model);
+		// set correct color encoding
 		model.traverse((n) => {
 			n.castShadow = true;
 			if (n.isMesh) {
@@ -85,25 +85,39 @@ const createPlayer = () => {
 		});
 		model.rotation.y = Math.PI;
 
-		playerMixer = new THREE.AnimationMixer(model);
-
-		scene.add(model);
+		// Load Pistol
 		model.scale.set(0.1, 0.1, 0.1);
-		playerController.attach(model);
+		const arm = model.getObjectByName('swatRightHandThumb3').children[1];
+
+		loader.load('Pistol.fbx').then((ak) => {
+			ak.scale.set(0.15, 0.15, 0.15);
+			ak.scale.divideScalar(model.scale.x);
+			ak.rotation.y = -Math.PI * 0.5;
+			ak.rotation.x = Math.PI / 6;
+			arm.add(ak);
+		});
+
 		cameraController.attach(model);
+
+		playerController.attach(model);
+		scene.add(model);
+
+		// Handle animations and states
+		playerMixer = new THREE.AnimationMixer(model);
 
 		const onLoadAnimation = (animName, anim) => {
 			const clip = anim.animations[0];
 			const action = playerMixer.clipAction(clip);
+			action.timeScale = 1 / 20;
 			stateMachine.addAnimation(animName, {
 				clip,
 				action
 			});
 		};
 
-		loader.load('Idle.fbx').then((a) => onLoadAnimation('idle', a));
-		loader.load('Running.fbx').then((a) => onLoadAnimation('run', a));
-		loader.load('Walking.fbx').then((a) => onLoadAnimation('walk', a));
+		loader.load('Pistol Idle.fbx').then((a) => onLoadAnimation('idle', a));
+		loader.load('Pistol Run.fbx').then((a) => onLoadAnimation('run', a));
+		loader.load('Pistol Walk.fbx').then((a) => onLoadAnimation('walk', a));
 		stateMachine.addState('idle', playerStates.IdleState);
 		stateMachine.addState('walk', playerStates.WalkState);
 		stateMachine.addState('run', playerStates.RunState);
@@ -116,9 +130,9 @@ const createFloor = () => {
 	sand.wrapS = THREE.RepeatWrapping;
 	sand.wrapT = THREE.RepeatWrapping;
 	sand.encoding = THREE.sRGBEncoding;
-	sand.repeat.set(5, 5);
+	sand.repeat.set(10, 10);
 
-	const geom = new THREE.PlaneBufferGeometry(10, 10, 512, 512);
+	const geom = new THREE.PlaneBufferGeometry(100, 100, 512, 512);
 	const material = new THREE.MeshLambertMaterial({ map: sand });
 	const mesh = new THREE.Mesh(geom, material);
 
@@ -126,7 +140,7 @@ const createFloor = () => {
 	mesh.receiveShadow = true;
 	mesh.name = 'floor';
 
-	mesh.scale.addScalar(50.0);
+	mesh.scale.addScalar(10.0);
 
 	return mesh;
 };
@@ -200,7 +214,7 @@ camera.position.y = 2.5;
 
 const tick = (timeElapsed) => {
 	renderer.render(scene, camera);
-	const timeElapsedS = Math.min(1.0 / 30.0, timeElapsed * 0.001);
+	const timeElapsedS = Math.min(1.0 / 50.0, timeElapsed * 0.001);
 	playerController.update(timeElapsedS);
 	cameraController.update(timeElapsedS);
 	stateMachine.update(timeElapsedS, playerController.input);

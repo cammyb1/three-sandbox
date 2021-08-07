@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
 export default class CameraController {
-	constructor(config) {
-		this.config = config;
+	constructor(params) {
+		this.params = params;
 		this.target = null;
 		this.init();
 
@@ -11,14 +11,13 @@ export default class CameraController {
 	}
 
 	init() {
-		if (this.config.camera) {
-			this.config.camera.updateProjectionMatrix();
+		if (this.params.camera) {
+			this.params.camera.updateProjectionMatrix();
 		}
 	}
 
 	attach(target) {
 		this.target = target;
-		this.config.camera.lookAt(target.position);
 	}
 
 	calculateOffset() {
@@ -37,7 +36,7 @@ export default class CameraController {
 	}
 
 	detach() {
-		this.config.camera.parent = null;
+		this.params.camera.parent = null;
 		this.target = null;
 	}
 
@@ -50,9 +49,9 @@ export default class CameraController {
 			this.currentPos.lerp(position, t);
 			this.currentLook.lerp(lookAt, t);
 
-			this.config.camera.position.copy(this.currentPos);
-			this.config.camera.lookAt(this.currentLook);
-			this.config.camera.updateProjectionMatrix();
+			this.params.camera.position.copy(this.currentPos);
+			this.params.camera.lookAt(this.currentLook);
+			this.params.camera.updateProjectionMatrix();
 		}
 	}
 }

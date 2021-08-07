@@ -28,7 +28,6 @@ export class IdleState extends State {
 			action.crossFadeFrom(prevAction, 0.25, true);
 		}
 
-		action.timeScale = 0.5;
 		action.play();
 	}
 
@@ -68,7 +67,6 @@ export class WalkState extends State {
 			action.crossFadeFrom(prevAction, 0.5, true);
 		}
 
-		action.timeScale = 0.5;
 		action.play();
 	}
 
@@ -113,7 +111,6 @@ export class RunState extends State {
 			action.crossFadeFrom(prevAction, 0.5, true);
 		}
 
-		action.timeScale = 0.5;
 		action.play();
 	}
 
