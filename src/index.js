@@ -101,8 +101,8 @@ const createPlayer = () => {
 		loader.load('Running.fbx').then((a) => onLoadAnimation('run', a));
 		loader.load('Walking.fbx').then((a) => onLoadAnimation('walk', a));
 		stateMachine.addState('idle', playerStates.IdleState);
-		// stateMachine.addState('run', playerStates.IdleState);
-		// stateMachine.addState('walk', playerStates.IdleState);
+		stateMachine.addState('walk', playerStates.WalkState);
+		stateMachine.addState('run', playerStates.RunState);
 	});
 };
 
