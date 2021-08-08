@@ -11,7 +11,11 @@ export default class ModelLoader extends FBXLoader {
 
 	load(resource) {
 		if (this.modelList[resource]) {
-			return this.modelList[resource].then((m) => SkeletonUtils.clone(m));
+			return this.modelList[resource].then((m) => {
+				const clone = SkeletonUtils.clone(m);
+				clone.animations = m.animations;
+				return clone;
+			});
 		}
 
 		const promise = new Promise((resolve, reject) => {

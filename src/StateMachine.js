@@ -14,6 +14,7 @@ export default class StateMachine {
 	}
 
 	setState(name) {
+		if (!this.states[name]) return;
 		const prevState = this.currentState;
 		if (prevState) {
 			if (prevState.Name === name) return;

@@ -8,6 +8,7 @@ import * as playerStates from './States';
 export default class Player {
 	constructor(params) {
 		this.params = params;
+		this.name = 'player';
 		this.mixer;
 		this.controller = new PlayerController(params);
 		this.cameraController = new CameraController({
@@ -35,10 +36,6 @@ export default class Player {
 	}
 
 	loadModel() {
-		this.params.loader.manager.onLoad = () => {
-			this.states.setState('idle');
-		};
-
 		this.params.loader.load('swat.fbx').then((model) => {
 			// set correct color encoding
 			model.traverse((n) => {
@@ -84,6 +81,9 @@ export default class Player {
 					clip,
 					action
 				});
+				if (animName === 'idle') {
+					this.states.setState('idle');
+				}
 			};
 
 			this.params.loader

@@ -18,7 +18,7 @@ export class IdleState extends State {
 	}
 
 	Enter(prevState) {
-		const action = this.parent.animations['idle'].action;
+		const action = this.parent.animations['idle']?.action;
 		if (prevState) {
 			const prevAction = this.parent.animations[prevState.Name].action;
 			action.time = 0.0;
@@ -28,7 +28,7 @@ export class IdleState extends State {
 			action.crossFadeFrom(prevAction, 0.25, true);
 		}
 
-		action.play();
+		action?.play();
 	}
 
 	Update(_, input) {
@@ -48,7 +48,7 @@ export class WalkState extends State {
 	}
 
 	Enter(prevState) {
-		const action = this.parent.animations['walk'].action;
+		const action = this.parent.animations['walk']?.action;
 		if (prevState) {
 			const prevAction = this.parent.animations[prevState.Name].action;
 
@@ -67,7 +67,7 @@ export class WalkState extends State {
 			action.crossFadeFrom(prevAction, 0.5, true);
 		}
 
-		action.play();
+		action?.play();
 	}
 
 	Update(_, input) {
@@ -93,7 +93,7 @@ export class RunState extends State {
 	}
 
 	Enter(prevState) {
-		const action = this.parent.animations['run'].action;
+		const action = this.parent.animations['run']?.action;
 		if (prevState) {
 			const prevAction = this.parent.animations[prevState.Name].action;
 
@@ -111,7 +111,7 @@ export class RunState extends State {
 			action.crossFadeFrom(prevAction, 0.5, true);
 		}
 
-		action.play();
+		action?.play();
 	}
 
 	Update(_, input) {

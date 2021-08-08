@@ -7,6 +7,7 @@ import SkyFrag from './shaders/sky.fragment.glsl';
 import SkyVertex from './shaders/sky.vertex.glsl';
 import Player from './Player';
 import EntityManager from './EntityManager';
+import Enemy from './Enemy';
 
 const canvas = document.getElementById('app');
 
@@ -76,10 +77,10 @@ const createPlayer = () => {
 };
 
 const createZombie = () => {
-	loader.load('zombie.fbx').then((model) => {
-		model.scale.divideScalar(10);
-		scene.add(model);
-	});
+	for (let i = 1; i <= 10; i++) {
+		const zombie = new Enemy(config);
+		entityManager.addEntity(`zombie_${i}`, zombie);
+	}
 };
 
 const createFloor = () => {

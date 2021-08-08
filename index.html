@@ -1,39 +1,16 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Parcel Sandbox</title>
-    <meta charset="UTF-8" />
-    <style>
-      .hidden {
-        display:none !important;
-      }
-      .loader {
-        display: flex;
-        position: absolute;
-        width: 100%;
-        height: 100vh;
-        background: rgba(255, 255, 255, 0.9);
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        flex-direction: column;
-      }
-      .loader span{
-        color: green;
-        font-family: Calibri;
-        font-weight: bold;
-        font-size: 2.5rem;
-        align-self: center;
-      }
-    </style>
-  </head>
+	<head>
+		<title>Parcel Sandbox</title>
+		<meta charset="UTF-8" />
+	</head>
 
-  <body>
-    <canvas id="app"></canvas>
-    <div id="loader" class="loader">
-      <span id="percentage">0 %</span>
-      <span id="info"></span>
-    </div>
-    <script src="src/index.js"></script>
-  </body>
+	<body>
+		<canvas id="app"></canvas>
+		<div id="loader" class="loader">
+			<span id="percentage">0 %</span>
+			<span id="info"></span>
+		</div>
+		<script src="src/index.js"></script>
+	</body>
 </html>
