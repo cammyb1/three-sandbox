@@ -1,14 +1,12 @@
 import './styles.css';
 
 import * as THREE from 'three';
-import PlayerController from './PlayerController';
-import CameraController from './CameraController';
 import ModelLoader from './ModelLoader';
-import StateMachine from './StateMachine';
-import * as playerStates from './States';
 
 import SkyFrag from './shaders/sky.fragment.glsl';
 import SkyVertex from './shaders/sky.vertex.glsl';
+import Player from './Player';
+import EntityManager from './EntityManager';
 
 const canvas = document.getElementById('app');
 
@@ -26,18 +24,37 @@ const camera = new THREE.PerspectiveCamera(45, size.x / size.y, 1, 10000);
 const scene = new THREE.Scene();
 const loader = new ModelLoader();
 
+const loaderDom = document.getElementById('loader');
+const domPercentage = document.getElementById('percentage');
+const domInfo = document.getElementById('info');
+
+loader.manager.onProgress = (url, itemsLoaded, itemsTotal) => {
+	const percentage = (itemsLoaded / itemsTotal) * 100;
+	domPercentage.innerHTML = `${Math.floor(percentage)} %`;
+	if (!url.includes('blob:')) {
+		domInfo.innerHTML = url;
+	}
+
+	if (percentage === 100) {
+		loaderDom.classList.add('hidden');
+	}
+};
+
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.physicallyCorrectLights = true;
 renderer.toneMapping = THREE.ReinhardToneMapping;
-renderer.gammaOutput = true;
+renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMappingExposure = 2.3;
 renderer.setSize(size.x, size.y);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
+const entityManager = new EntityManager();
+
 const config = {
 	renderer,
 	scene,
+	loader,
 	camera
 };
 
@@ -53,74 +70,15 @@ window.addEventListener('resize', () => {
 	size.y = window.innerHeight;
 });
 
-let playerController, cameraController, stateMachine, playerMixer;
-
 const createPlayer = () => {
-	playerController = new PlayerController(config);
-	cameraController = new CameraController({
-		...config,
-		input: playerController.input
-	});
-	stateMachine = new StateMachine();
+	const player = new Player(config);
+	entityManager.addEntity('player', player);
+};
 
-	playerController.speed = 20;
-
-	loader.manager.onLoad = () => {
-		stateMachine.setState('idle');
-	};
-
-	loader.load('swat.fbx').then((model) => {
-		// set correct color encoding
-		model.traverse((n) => {
-			n.castShadow = true;
-			if (n.isMesh) {
-				if (n.material.length) {
-					n.material.map((m) => {
-						m.encoding = THREE.sRGBEncoding;
-					});
-				} else {
-					n.material.map.encoding = THREE.sRGBEncoding;
-				}
-			}
-		});
-		model.rotation.y = Math.PI;
-
-		// Load Pistol
-		model.scale.set(0.1, 0.1, 0.1);
-		const arm = model.getObjectByName('swatRightHandThumb3').children[1];
-
-		loader.load('Pistol.fbx').then((ak) => {
-			ak.scale.set(0.15, 0.15, 0.15);
-			ak.scale.divideScalar(model.scale.x);
-			ak.rotation.y = -Math.PI * 0.5;
-			ak.rotation.x = Math.PI / 6;
-			arm.add(ak);
-		});
-
-		cameraController.attach(model);
-
-		playerController.attach(model);
+const createZombie = () => {
+	loader.load('zombie.fbx').then((model) => {
+		model.scale.divideScalar(10);
 		scene.add(model);
-
-		// Handle animations and states
-		playerMixer = new THREE.AnimationMixer(model);
-
-		const onLoadAnimation = (animName, anim) => {
-			const clip = anim.animations[0];
-			const action = playerMixer.clipAction(clip);
-			action.timeScale = 1 / 20;
-			stateMachine.addAnimation(animName, {
-				clip,
-				action
-			});
-		};
-
-		loader.load('Pistol Idle.fbx').then((a) => onLoadAnimation('idle', a));
-		loader.load('Pistol Run.fbx').then((a) => onLoadAnimation('run', a));
-		loader.load('Pistol Walk.fbx').then((a) => onLoadAnimation('walk', a));
-		stateMachine.addState('idle', playerStates.IdleState);
-		stateMachine.addState('walk', playerStates.WalkState);
-		stateMachine.addState('run', playerStates.RunState);
 	});
 };
 
@@ -201,6 +159,8 @@ const createSky = () => {
 };
 
 createPlayer();
+createZombie();
+
 const floor = createFloor();
 const sky = createSky();
 const light = createLight();
@@ -215,12 +175,7 @@ camera.position.y = 2.5;
 const tick = (timeElapsed) => {
 	renderer.render(scene, camera);
 	const timeElapsedS = Math.min(1.0 / 50.0, timeElapsed * 0.001);
-	playerController.update(timeElapsedS);
-	cameraController.update(timeElapsedS);
-	stateMachine.update(timeElapsedS, playerController.input);
-	if (playerMixer) {
-		playerMixer.update(timeElapsedS);
-	}
+	entityManager.update(timeElapsedS);
 	requestAnimationFrame(tick);
 };
 
