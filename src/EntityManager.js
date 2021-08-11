@@ -8,8 +8,8 @@ export default class EntityManager {
 	}
 
 	update(elapsedTime) {
-		Object.values(this.entities).forEach((entity) =>
-			entity.update(elapsedTime)
-		);
+		Object.values(this.entities).forEach((entity) => {
+			entity.update(elapsedTime);
+		});
 	}
 }
