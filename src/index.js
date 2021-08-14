@@ -133,14 +133,14 @@ const createLight = () => {
 };
 
 const createSky = () => {
-	const skyGeom = new THREE.SphereBufferGeometry(1000, 32, 15);
+	const skyGeom = new THREE.SphereBufferGeometry(1000, 48, 48);
 	const skyMat = new THREE.RawShaderMaterial({
 		uniforms: {
 			bottomColor: {
 				value: new THREE.Color(0xa48660)
 			},
 			topColor: {
-				value: new THREE.Color(0xe0a96d)
+				value: new THREE.Color(0xa48660)
 			}
 		},
 		vertexShader: SkyVertex,
